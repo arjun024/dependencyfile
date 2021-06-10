@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -eu
+set -o pipefail
+layersarg=1
+index=1
+
+isurl() { [[ "$1" =~ https?://* ]]; }
+
+echo "*** Dependencyfile buildpack ***"
+
+if [ ! -f Dependencyfile ]; then
+  echo "Dependencyfile not found in $PWD. Exiting."
+  exit 0
+fi
+
+while IFS="" read -r uri || [ -n "$uri" ]
+do
+  layername="${!layersarg}/layer${index}"
+  mkdir -p "${layername}"
+  pushd "${layername}"
+    echo "Installing $uri to layer layer${index}"
+    if isurl "$uri"; then
+      curl -L "$uri" -o dependency.tgz
+    else
+      echo "pwd is $PWD"
+      ls
+      cat "$OLDPWD/$uri" > dependency.tgz
+    fi
+    tar -xvf dependency.tgz
+    rm -rf dependency.tgz
+    # some tars put everything again in a single directory
+    if [ "1" == "$(find . -mindepth 1 -maxdepth 1 | wc -l)" ]; then
+      find . -maxdepth 1 -type d | tail -n1 |  xargs -I {} cp -TR "{}" .
+    fi
+    mkdir -p env.build
+    echo -n "${layername}/bin" > "env.build/PATH.prepend"
+    echo -n ":" > "env.build/PATH.delim"
+  popd
+
+  echo "build = true" > "${layername}.toml"
+  echo -n "launch = true" >> "${layername}.toml"
+  ((++index))
+done < Dependencyfile

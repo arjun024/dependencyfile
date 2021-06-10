@@ -1,0 +1,1 @@
+web: LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/layers/arjun024_dependencyfile/layer1/luajit/lib LUA_PATH=/layers/arjun024_dependencyfile/layer1/lualib/?.lua /layers/arjun024_dependencyfile/layer1/nginx/sbin/nginx -p $PWD -c $PWD/nginx.conf

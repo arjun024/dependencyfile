@@ -1,0 +1,1 @@
+web: sed -i 's#/usr/local/lib/R#/layers/arjun024_dependencyfile/layer1#' /layers/arjun024_dependencyfile/layer1/bin/R && python -m pip install rpy2 Naked && python python.py
